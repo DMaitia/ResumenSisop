@@ -1,0 +1,134 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\author{You}
+
+\begin{document}
+
+\begin{figure}
+ \centering
+   \includegraphics[width=0.75\textwidth]{fig/fiuba.jpg}
+\end{figure}
+
+\begin{titlepage}
+		\centering
+		{\scshape\LARGE Universidad de Buenos Aires \par}
+		\vspace{1cm}
+		{\scshape\Large Materia\par}
+		\vspace{0.5cm}
+		{\scshape\Large Fecha de cursada\par}
+		\vspace{1.5cm}
+		{\huge\bfseries Tema del trabajo práctico \par}
+		\vspace{1.5cm}
+		{\huge\bfseries Informe Individual \par}
+		\vspace{0.5cm}
+		{\Large\itshape Darius Maitia - 95436 \par}
+        \vspace{0.5cm}
+        
+    {\Large\itshape \par}
+    \vspace{1cm}  
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+
+\section{Concurrencia}
+
+\subsection{Dos razones para la concurrencia}
+
+\begin{itemize}
+\item Eficiencia: hay tareas que se hacen mejor de a varios
+\item I/O : en un mismo proceso un hilo se ocupa del input/output y los otros hilos se ocupan de otras cosas.
+\end{itemize}
+\subsection{Concurrencia vs procesos}
+
+\begin{itemize}
+\item Los procesos se ejecutan de forma aislada
+\item Los threads comparten recursos:
+\subitem Comparten la memoria; entre threads no se necesita switchear page tables ni nada.
+\subitem \textbf{No comparten stack! :} cada hilo tiene su propio stack. 
+\end{itemize}
+
+\subsection{Crear y joinear threads en C}
+\begin{lstlisting}
+#include <pthread.h>;
+
+void * mythread(void * arg){
+	printf("Imprimo gilada con una letra al final: %c", arg);
+}
+
+int main(){
+	int i;
+	pthread_t p1, p2;
+	pthread_create(&p1, NULL, mythread, "A");
+	pthread_create(&p2, NULL, mythread, "B");
+	
+	pthread_join(&p1, NULL);
+	pthread_join(&p2, NULL);
+	
+	return 0;
+}
+\end{lstlisting}
+
+Pthread\_create y pthread\_join deberían devolver 0 en caso de exito.
+
+\subsection{Critical sections}
+\textbf{Definición} : una critical section es una parte del código donde hay una variable compartida a la que pueden acceder múltiples threads.
+
+Para encarar este problema hay que hacer lo siguiente:
+\begin{enumerate}
+\item Separar las incumbencias de los threads lo más que se pueda en el código.
+\item En donde hayan variables de acceso compartido entre los threads, usar locks.
+\end{enumerate}
+
+\subsubsection{Locks}
+Los locks permiten acceder a una variable de una critical section con total seguridad, sabiendo que otro hilo no podrá acceder a esa variable mientras yo esté usándola. 
+
+La lógica es la siguiente:
+\begin{lstlisting}
+lock_t mutex;
+...
+lock(&mutex);
+balance = balance + 1;
+unlock(&mutex);
+\end{lstlisting}
+
+En lenguaje de programación C la lógica es la siguiente:
+\begin{lstlisting}
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+Pthread_mutex_lock(&lock);
+balance = balance + 1;
+Pthread_mutex_unlock(&lock);
+\end{lstlisting}
+
+\newpage
+\section{Conclusión}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{ServoVsGecko}
+  Michael Larabel,
+  \textit{Mozilla's Servo Engine Is Crazy Fast Compared To Gecko},
+  9 nov. 2014,\newline
+  \url{https://www.phoronix.com/scan.php?page=news_item&px=MTgzNDA}
+
+\end{thebibliography}
+
+
+\end{document}
